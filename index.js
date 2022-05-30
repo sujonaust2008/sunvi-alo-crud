@@ -31,8 +31,14 @@ async function run(){
             const manufacturer = await serviceCollection.findOne(query);
             res.send(manufacturer);
         });
-
+          
+            
         app.post('/manufacturer', async(req, res) =>{
+            const newService = req.body;
+            const result = await serviceCollection.insertOne(newService);
+            res.send(result);
+        });
+        app.post('/manufacturer/:id/:order', async(req, res) =>{
             const newService = req.body;
             const result = await serviceCollection.insertOne(newService);
             res.send(result);
