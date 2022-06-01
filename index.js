@@ -18,11 +18,19 @@ async function run(){
     try{
         await client.connect();
         const serviceCollection = client.db('sunvi-alo').collection('manufacturer');
+
+        const orderCollection = client.db('sunvi-alo').collection('orderProducts');
+
         app.get('/manufacturer', async(req, res)=>{
             const query={};
             const cursor = serviceCollection.find(query);
             const manufacturers = await cursor.toArray();
             res.send(manufacturers);
+        })
+        app.post('/orderProduct', async(req, res)=>{
+            const orderProduct = req.body;
+            const result = await orderCollection.insertOne(orderProduct);
+            res.send(result);
         })
 
         app.get('/manufacturer/:id', async(req,res)=>{
@@ -38,11 +46,6 @@ async function run(){
             const result = await serviceCollection.insertOne(newService);
             res.send(result);
         });
-        app.post('/manufacturer/:id/:order', async(req, res) =>{
-            const newService = req.body;
-            const result = await serviceCollection.insertOne(newService);
-            res.send(result);
-        });
 
         app.delete('/manufacturer/:id', async(req, res) =>{
             const id = req.params.id;
@@ -51,27 +54,28 @@ async function run(){
             res.send(result);
         });
 
-        app.put('/manufacturer/:id', async(req,res)=>{
-            const id =req.params.id;
-            const update = req.body;
-            const filter = {_id: ObjectId(id)};
-            const options = { upsert: true};
-            const updatedDoc = {
-                $set: {
+        // app.put('/orderProduct/:id', async(req,res)=>{
+        //     const id =req.params.id;
+        //     const update = req.body;
+        //     const filter = {_id: ObjectId(id)};
+        //     const options = { upsert: true};
+        //     const updatedDoc = {
+        //         $set: {
                     
-                    name: update.name,
-                    img: update.img,
-                    price: update.price,
-                    description: update.description,
-                    supName: update.supName,
-                    quantity : update.quantity
+        //             name: update.name,
+        //             img: update.img,
+        //             price: update.price,
+        //             description: update.description,
+        //             minimumOrder: update.minimumOrder,
+        //             Price : update.Price,
+        //             stock: update.stock
                     
                     
-                }
-            };
-            const result = await serviceCollection.updateOne(filter, updatedDoc, options);
-            res.send(result);
-        })
+        //         }
+        //     };
+        //     const result = await serviceCollection.updateOne(filter, updatedDoc, options);
+        //     res.send(result);
+        // })
 
     }
     finally{
