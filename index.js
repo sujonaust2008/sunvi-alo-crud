@@ -20,6 +20,7 @@ async function run(){
         const serviceCollection = client.db('sunvi-alo').collection('manufacturer');
 
         const orderCollection = client.db('sunvi-alo').collection('orderProducts');
+        const userCollection = client.db('sunvi-alo').collection('userProfile');
 
         app.get('/manufacturer', async(req, res)=>{
             const query={};
@@ -29,10 +30,30 @@ async function run(){
         })
         app.post('/orderProduct', async(req, res)=>{
             const orderProduct = req.body;
+            const query = {userName: orderProduct.userName, userEmail: orderProduct.userEmail, productName: orderProduct.produceName};
+            const exists = await orderCollection.findOne(query);
+            if(exists){
+                return res.send({success: false, orderProduct: exists})
+            }
             const result = await orderCollection.insertOne(orderProduct);
             res.send(result);
         })
-
+        app.post('/userProfile', async(req, res)=>{
+            const userProfile = req.body;
+            const query = {name: userProfile.name, email: userProfile.email};
+            const exists = await orderCollection.findOne(query);
+            if(exists){
+                return res.send({success: false, userProfile: exists})
+            }
+            const result = await orderCollection.insertOne(userProfile);
+            res.send(result);
+        })
+        app.get('/orderProduct', async(req, res)=>{
+            const userEmail = req.query.userEmail;
+            const query = {userEmail: userEmail};
+            const orderProduct = await orderCollection.find(query).toArray(); 
+            res.send(orderProduct);
+        })
         app.get('/manufacturer/:id', async(req,res)=>{
             const id = req.params.id;
             const query={_id: ObjectId(id)};
@@ -44,6 +65,12 @@ async function run(){
         app.post('/manufacturer', async(req, res) =>{
             const newService = req.body;
             const result = await serviceCollection.insertOne(newService);
+            res.send(result);
+        });
+        app.delete('/orderProduct/:id', async(req, res) =>{
+            const id = req.params.id;
+            const query = {_id: ObjectId(id)};
+            const result = await orderCollection.deleteOne(query);
             res.send(result);
         });
 
