@@ -18,15 +18,22 @@ async function run(){
     try{
         await client.connect();
         const serviceCollection = client.db('sunvi-alo').collection('manufacturer');
+        const userCollection = client.db('sunvi-alo').collection('userProfileCreate');
 
         const orderCollection = client.db('sunvi-alo').collection('orderProducts');
-        const userCollection = client.db('sunvi-alo').collection('userProfile');
+        const commentCollection = client.db('sunvi-alo').collection('userComment');
 
         app.get('/manufacturer', async(req, res)=>{
             const query={};
             const cursor = serviceCollection.find(query);
             const manufacturers = await cursor.toArray();
             res.send(manufacturers);
+        })
+        app.get('/userComment', async(req, res)=>{
+            const query={};
+            const cursor = commentCollection.find(query);
+            const comments = await cursor.toArray();
+            res.send(comments);
         })
         app.post('/orderProduct', async(req, res)=>{
             const orderProduct = req.body;
@@ -38,22 +45,28 @@ async function run(){
             const result = await orderCollection.insertOne(orderProduct);
             res.send(result);
         })
-        app.post('/userProfile', async(req, res)=>{
-            const userProfile = req.body;
-            const query = {name: userProfile.name, email: userProfile.email};
-            const exists = await orderCollection.findOne(query);
-            if(exists){
-                return res.send({success: false, userProfile: exists})
-            }
-            const result = await orderCollection.insertOne(userProfile);
+
+       
+        app.post('/userComment', async(req, res)=>{
+            const userComment = req.body;
+           
+            const result = await commentCollection.insertOne(userComment);
             res.send(result);
         })
+        app.post('/userProfileCreate', async(req, res)=>{
+            const userProfileCreate = req.body;
+           
+            const result = await userCollection.insertOne(userProfileCreate);
+            res.send(result);
+        })
+
         app.get('/orderProduct', async(req, res)=>{
             const userEmail = req.query.userEmail;
             const query = {userEmail: userEmail};
             const orderProduct = await orderCollection.find(query).toArray(); 
             res.send(orderProduct);
         })
+       
         app.get('/manufacturer/:id', async(req,res)=>{
             const id = req.params.id;
             const query={_id: ObjectId(id)};
@@ -81,28 +94,28 @@ async function run(){
             res.send(result);
         });
 
-        // app.put('/orderProduct/:id', async(req,res)=>{
-        //     const id =req.params.id;
-        //     const update = req.body;
-        //     const filter = {_id: ObjectId(id)};
-        //     const options = { upsert: true};
-        //     const updatedDoc = {
-        //         $set: {
+        app.put('/orderProduct/:id', async(req,res)=>{
+            const id =req.params.id;
+            const update = req.body;
+            const filter = {_id: ObjectId(id)};
+            const options = { upsert: true};
+            const updatedDoc = {
+                $set: {
                     
-        //             name: update.name,
-        //             img: update.img,
-        //             price: update.price,
-        //             description: update.description,
-        //             minimumOrder: update.minimumOrder,
-        //             Price : update.Price,
-        //             stock: update.stock
+                    name: update.name,
+                    img: update.img,
+                    price: update.price,
+                    description: update.description,
+                    minimumOrder: update.minimumOrder,
+                    Price : update.Price,
+                    stock: update.stock
                     
                     
-        //         }
-        //     };
-        //     const result = await serviceCollection.updateOne(filter, updatedDoc, options);
-        //     res.send(result);
-        // })
+                }
+            };
+            const result = await serviceCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        })
 
     }
     finally{
